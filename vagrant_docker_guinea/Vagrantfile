@@ -1,0 +1,11 @@
+VAGRANT_API = "2"
+
+Vagrant.configure(VAGRANT_API) do |config|
+
+  config.vm.box = "ubuntu/trusty64"
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "playbook.yml"
+    ansible.sudo = true
+  end
+end

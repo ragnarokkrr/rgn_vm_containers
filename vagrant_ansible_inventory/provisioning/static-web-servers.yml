@@ -1,0 +1,4 @@
+---
+  - hosts: static_web_servers
+    tasks:
+      - debug: msg="static-web-servers provisioned"

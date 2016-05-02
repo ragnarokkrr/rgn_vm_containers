@@ -1,0 +1,43 @@
+VAGRANT_API = "2"
+
+Vagrant.configure(VAGRANT_API) do |config|
+
+  config.vm.box = "ubuntu/trusty64"
+
+  config.vm.define "proxy_active" do |proxy_active|
+    proxy_active.vm.network "private_network", ip: "192.168.33.10"
+  end
+
+  config.vm.define "proxy_bkp" do |proxy_bkp|
+    proxy_bkp.vm.network "private_network", ip: "192.168.33.11"
+  end
+
+  config.vm.define "hello_service1" do |hello_service1|
+    hello_service1.vm.network "private_network", ip: "192.168.33.12"
+
+    hello_service1.vm.provision "ansible" do |ansible|
+      ansible.playbook = "provisioning/microservices.yml"
+      ansible.sudo = true
+      ansible.raw_arguments = ["--connection=paramiko"]
+
+      ansible.groups = {
+        "spring-boot-microservices" => ["hello_service1"]
+      }
+    end
+  end
+
+  config.vm.define "hello_service2" do |hello_service2|
+    hello_service2.vm.network "private_network", ip: "192.168.33.13"
+
+    hello_service2.vm.provision "ansible" do |ansible|
+      ansible.playbook = "provisioning/microservices.yml"
+      ansible.sudo = true
+      ansible.raw_arguments = ["--connection=paramiko"]
+
+      ansible.groups = {
+        "spring-boot-microservices" => ["hello_service1"]
+      }
+    end
+  end
+
+end

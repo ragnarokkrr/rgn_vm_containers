@@ -1,0 +1,7 @@
+---
+- hosts: devhosts #10.11.101.119
+  tasks:
+    - debug: msg="System {{ inventory_hostname }} has uuid {{ ansible_product_uuid }}"
+
+  roles:
+    - jdk8

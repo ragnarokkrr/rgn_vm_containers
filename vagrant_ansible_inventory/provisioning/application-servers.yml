@@ -1,0 +1,6 @@
+---
+  - hosts: application_servers
+    roles:
+      - node
+    tasks:
+      - debug: msg="application_servers provisioned"

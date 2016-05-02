@@ -1,0 +1,18 @@
+---
+- hosts: spring-boot-microservices #10.11.101.119
+  tasks:
+    - debug: msg="System {{ inventory_hostname }} has uuid {{ ansible_product_uuid }}"
+
+    - block:
+      - name: Install Oracle Java 8 repository
+        apt_repository: repo='ppa:webupd8team/java'
+
+      - name: Accept Java 8 License
+        sudo: yes
+        debconf: >
+          name='oracle-java8-installer'
+          question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+
+      - name: Install Oracle Java 8
+        sudo: yes
+        apt: name=oracle-java8-installer update_cache=yes  state=present force=yes

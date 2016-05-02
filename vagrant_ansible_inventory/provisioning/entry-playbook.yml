@@ -1,0 +1,10 @@
+---
+  - name: Application Servers
+    include: application_servers.yml
+    tags:
+      - application_servers
+
+  - name: Static Web Servers
+    include: static_web_servers.yml
+    tags:
+      - static_web_servers

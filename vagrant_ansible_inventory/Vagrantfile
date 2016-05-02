@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+
+NGINX_INSTANCES = 2
+NODE_INSTANCES = 2
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "ubuntu/trusty64"
+
+  (1..NGINX_INSTANCES).each do |i|
+    config.vm.define "nginx-#{i}" do |nginx|
+
+      nginx.vm.network "forwarded_port", guest: 80, host: 8080 + i
+      nginx.vm.network "private_network", ip: "192.168.33.1#{i}"
+
+      nginx.vm.provider "virtualbox" do |vb|
+        vb.gui = false
+        vb.memory = "256"
+      end
+    end
+  end
+
+  (1..NODE_INSTANCES).each do |i|
+    config.vm.define "node-#{i}" do |nginx|
+
+      nginx.vm.network "forwarded_port", guest: 80, host: 8090 + i
+      nginx.vm.network "private_network", ip: "192.168.33.2#{i}"
+
+      nginx.vm.provider "virtualbox" do |vb|
+        vb.gui = false
+        vb.memory = "256"
+      end
+    end
+  end
+
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "provisioning/entry-playbook.yml"
+    ansible.groups = {
+      "static_web_servers" => ["nginx-1", "nginx-2"],
+      "application_servers" => ["node-1", "node-2"]
+    }
+
+    ansible.sudo = true
+    #ansible.raw_arguments = ["--connection=paramiko"]
+    #ansible.inventory_path = "provisioning/inventory"
+    ansible.raw_arguments = ["-vvvv"]
+
+  end
+
+
+
+end

@@ -1,0 +1,45 @@
+- hosts: all
+  become: True
+  become_method: sudo
+  become_user: root
+
+  tasks:
+
+    - block:
+
+      - apt: update_cache=yes
+
+      - name: basic> install
+        apt: name={{ item }} state=present
+        with_items:
+          - lynx-cur
+          - git
+
+    - block:
+
+      - name: docker client> install
+        apt: name=docker.io state=present
+
+      - name: docker client> symlink
+        file: >
+          src=/usr/bin/docker.io
+          dest=/usr/local/bin/docker
+          state=link
+
+      - name: docker client> autocomplete
+        command: "sed -i '$acomplete -F _docker docker'  /etc/bash_completion.d/docker"
+
+      - name: docker client> autocomplete source
+        become: no
+        shell: "source /etc/bash_completion.d/docker"
+        args:
+          executable: /bin/bash
+
+    - block:
+
+      - name: docker server>  auto init
+        command: "update-rc.d docker defaults"
+
+      #- name: docker server> start
+      #  become: yes
+      #  command: "service docker start"
