@@ -1,0 +1,30 @@
+# entry-playbook
+---
+  - hosts: ceph_nodes
+    roles:
+      - centos7-ceph
+
+    tasks:
+      - debug: msg="System {{ inventory_hostname }} has uuid {{ ansible_product_uuid }}"
+
+      - name: get host names for cephnodes groups
+        set_fact: >
+          ceph_nodes_list= "{{ groups['ceph_nodes'] | join (' ') }}"
+
+      - name: print GROUPS 0
+        debug: msg= "GROUPS 0 {{ ceph_nodes_list }}"
+
+      - name: test GROUPS 2
+        debug: msg= "GROUPS {{ item }}"
+        with_items: "{{ groups['ceph_nodes'] }}"
+
+      - name: test GROUPS 3
+        debug: msg= "{{  }}"
+
+
+#  - hosts: ceph_primary_node
+#    tasks:
+#      - debug: msg="System {{ inventory_hostname }} has uuid {{ ansible_product_uuid }}"
+
+#    roles:
+#      - {role: centos7-ceph-deploy, tags:['ceph_primary_node'] }

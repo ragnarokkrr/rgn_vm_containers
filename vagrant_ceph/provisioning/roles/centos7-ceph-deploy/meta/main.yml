@@ -1,0 +1,17 @@
+# centos7-ceph-deploy/meta/main.yml
+---
+  dependencies:
+    - { role: centos7-ceph }
+
+  galaxy_info:
+    author: Nilseu Padilha
+    description: Make ceph cluster via ceph-deploy for Centos 7
+    company: "Ragna Corp."
+    license: "license (BSD, MIT)"
+    min_ansible_version: 1.9
+    platforms:
+      - name: Centos
+        versions:
+        - 7
+    galaxy_tags:
+      - cloud

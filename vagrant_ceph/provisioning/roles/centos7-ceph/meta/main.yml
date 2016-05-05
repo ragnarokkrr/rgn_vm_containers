@@ -1,0 +1,17 @@
+# centos7-ceph/meta/main.yml
+---
+  dependencies:
+    - { role: centos7-epel7 }
+
+  galaxy_info:
+    author: Nilseu Padilha
+    description: Install Ceph for Centos 7
+    company: "Ragna Corp."
+    license: "license (BSD, MIT)"
+    min_ansible_version: 1.9
+    platforms:
+      - name: Centos
+        versions:
+        - 7
+    galaxy_tags:
+      - cloud

@@ -1,0 +1,15 @@
+# centos7-epel7/tasks/main.yml
+---
+  - name: Install EPEL repo. '{{ epel_repo_url }}'
+    yum:
+      name: "{{ epel_repo_url }}"
+      state: present
+    register: result
+    until: '"failed" not in result'
+    retries: 5
+    delay: 10
+
+  - name: Import EPEL GPG key '{{ epel_repo_gpg_key_url }}'.
+    rpm_key:
+      key: "{{ epel_repo_gpg_key_url }}"
+      state: present

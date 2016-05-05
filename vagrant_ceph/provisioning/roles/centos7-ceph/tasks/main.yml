@@ -1,0 +1,4 @@
+# centos7-ceph/meta/main.yml
+---
+  - name: install the latest version of ceph-deploy
+    yum: name=ceph-deploy enablerepo=epel state=latest
