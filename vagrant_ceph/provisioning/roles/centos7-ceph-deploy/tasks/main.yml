@@ -1,9 +1,19 @@
 # centos7-ceph-deploy/tasks/main.yml
 ---
 
+  - name: get host names for cephnodes groups
+    set_fact:
+      ceph_nodes_list="{{ groups['ceph_nodes'] | join(' ') }}"
+      ceph_primary_node="{{ groups['ceph_primary_node'] | join('') }}"
+
+  - name: "Build hosts file"
+    lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}" state=present
+    when: hostvars[item].ansible_default_ipv4.address is defined
+    with_items: "groups['all']"
+
   - name: create ceph cluster
     shell: >
-      ceph-deploy new {{ groups.ceph_primary_node }}
+      ceph-deploy new {{ ceph_primary_node }}
     #environment:
     args:
       executable: /bin/bash
@@ -11,10 +21,9 @@
   - name: create ceph dir
     file: path=/etc/ceph state=directory mode=0755
 
-  - name: add nodes to ceph-deploy {{ groups.ceph_nodes }}
-    with_items:
+  - name: add nodes to ceph-deploy {{ ceph_nodes_list }}
     shell: >
-      ceph-deploy install --release emperor {{ groups.ceph_nodes | join(' ')}}
+      ceph-deploy install --release emperor {{ ceph_nodes_list }}
     args:
       executable: /bin/bash
 
