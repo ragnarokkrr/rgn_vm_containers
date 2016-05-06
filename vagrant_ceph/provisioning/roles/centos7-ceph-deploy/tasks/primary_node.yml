@@ -1,0 +1,38 @@
+# centos7-ceph-deploy/tasks/primary-node.yml
+---
+
+  - name: create ceph cluster
+    shell: >
+      ceph-deploy new {{ ceph_primary_node }}
+    #environment:
+    args:
+      executable: /bin/bash
+
+  - name: create ceph dir
+    file: path=/etc/ceph state=directory mode=0755
+
+  - name: add nodes to ceph-deploy {{ ceph_nodes_list }}
+    shell: >
+      ceph-deploy install --release emperor {{ ceph_nodes_list }}
+    args:
+      executable: /bin/bash
+
+  - name: check nodes
+    shell: >
+      ceph -v
+    register: nodes_check
+    args:
+      executable: /bin/bash
+
+  - name: create monitor
+    shell: >
+      ceph-deploy mon create-initial
+    args:
+      executable: /bin/bash
+
+  - name: create status
+    shell: >
+      ceph-deploy mon create-initial
+    register: nodes_first_status
+    args:
+      executable: /bin/bash

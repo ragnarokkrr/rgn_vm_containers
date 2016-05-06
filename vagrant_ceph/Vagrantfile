@@ -3,9 +3,9 @@
 #
 
 CEPH_HOSTS = [
-  { name: 'ceph_node1', disk1: 'ceph-node1-osd1.vdi', disk2: 'ceph-node1-osd2.vdi', disk3: 'ceph-node1-osd3.vdi'},
-  { name: 'ceph_node2', disk1: 'ceph-node2-osd1.vdi', disk2: 'ceph-node2-osd2.vdi', disk3: 'ceph-node2-osd3.vdi'},
-  { name: 'ceph_node3', disk1: 'ceph-node3-osd1.vdi', disk2: 'ceph-node3-osd2.vdi', disk3: 'ceph-node3-osd3.vdi'}
+  { name: 'ceph-node1', disk1: 'ceph-node1-osd1.vdi', disk2: 'ceph-node1-osd2.vdi', disk3: 'ceph-node1-osd3.vdi'},
+  { name: 'ceph-node2', disk1: 'ceph-node2-osd1.vdi', disk2: 'ceph-node2-osd2.vdi', disk3: 'ceph-node2-osd3.vdi'},
+  { name: 'ceph-node3', disk1: 'ceph-node3-osd1.vdi', disk2: 'ceph-node3-osd2.vdi', disk3: 'ceph-node3-osd3.vdi'}
 ]
 
 CEPH_NODES = {
@@ -27,12 +27,14 @@ Vagrant.configure(2) do |config|
 
   CEPH_HOSTS.each_with_index do |ceph_host, i|
     config.vm.define ceph_host[:name] do |ceph_node|
+      ceph_node.vm.hostname = ceph_host[:name]
 
       ceph_node.vm.network "private_network", ip: "192.168.57.1#{i}"
       #ceph_node.vm.synced_folder "/srv/data", "/data"
 
       ceph_node.vm.provider :virtualbox do |vb|
         vb.name = ceph_host[:name]
+
         vb.gui = false
         vb.memory = "512"
         vb.cpus = 1
@@ -58,16 +60,17 @@ Vagrant.configure(2) do |config|
     ansible.sudo = true
     ansible.raw_arguments = ["--connection=paramiko"]
     ansible.groups = {
-      "ceph_nodes" => ["ceph_node[1:3]"],
-      "ceph_primary_node" => ["ceph_node1"],
+      "ceph_nodes" => ["ceph-node[1:3]"],
+      "ceph_primary_node" => ["ceph-node1"],
     }
 
-    #todo: gather facts
-    #ansible.raw_arguments = ['-vvvv']
-    ansible.extra_vars = CEPH_NODES
-      #'--extra-vars', '{"ceph_nodes_list":["ceph_node1","ceph_node2","ceph_node3"], "ceph_prim_node": "ceph_node1"}']
+    
+    #ansible.extra_vars = {
+    #  ceph_nodes_list: 'ceph_node1 ceph_node2 ceph_node3',
+    #  ceph_primary_node: 'ceph_node1'
+    #}
 
-    #ansible.raw_arguments = ["-vvvv"]
+    #ansible.raw_arguments = ['-vvvv']
     #ansible.inventory_path = "provisioning/inventory"
   end
 
