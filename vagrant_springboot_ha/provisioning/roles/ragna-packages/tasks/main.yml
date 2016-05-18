@@ -1,0 +1,11 @@
+---
+
+  - name: download '{{ package_repo }}/{{ package_name }}'
+    get_url: url={{ package_repo }}/{{ package_name }}?raw=true dest=/tmp/{{ package_name }} mode=0440
+
+  - name: install '{{ package_name }}' service from '{{ package_repo }}'
+    apt: deb=/tmp/{{ package_name }}
+
+  - name: placing instance name '{{ inventory_hostname }}' in file '{{ package_repo }}'
+    lineinfile: dest={{ conf_file }} line="ragna.gooodbye.instance:{{ inventory_hostname }}"
+    notify: restart {{ service_name }}
