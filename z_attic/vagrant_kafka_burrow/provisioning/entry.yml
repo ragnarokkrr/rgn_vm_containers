@@ -1,0 +1,13 @@
+# https://galaxy.ansible.com/wandergeek/golang/ (ok)
+---
+  - hosts: burrow
+    vars:
+      go_version: "1.6"
+      go_path: /usr/local
+      #go_tarball: "go1.6.2.src.tar.gz"
+      #go_tarball_checksum: "787b0b750d037016a30c6ed05a8a70a91b2e9db4bd9b1a2453aa502a63f1bccc"
+      #go_version_target: "go version go1.6.2 linux/amd64"
+    roles:
+      #- { role: wandergeek.golang }
+      #- role: mats116.golang
+      - slb350.Ansible-Burrow
