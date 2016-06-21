@@ -1,0 +1,20 @@
+---
+  - debug: msg="sibling_nodes_list {{ sibling_nodes_list }}"
+  #- name: Ensure Glusterfs is running
+  #  service: name=glusterd state=started
+  #  tags:
+  #    - cluster
+
+  #- name: Create Gluster volume
+  #  gluster_volume: >
+  #    bricks=/data/brick1 force=true
+  #      cluster={{sibling_nodes_list}}
+  #      replicas=2 name=gv0 state=present
+  #  run_once: true
+  #  tags:
+  #    - cluster
+
+  #- name: Start Gluster volume
+  #  gluster_volume: name=gv0 state=started
+  #  tags:
+  #    - cluster

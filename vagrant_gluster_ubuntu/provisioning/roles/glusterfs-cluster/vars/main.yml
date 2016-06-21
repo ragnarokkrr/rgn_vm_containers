@@ -1,0 +1,5 @@
+---
+  current_node_list:
+    - "{{ inventory_hostname }}"
+
+  sibling_nodes_list: "{{ groups.gluster_nodes | difference(current_node_list) | join(',') }}"

@@ -1,0 +1,107 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+
+GLUSTER_HOSTS = [
+  { name: 'gluster-node1', disk1: 'gluster-node1-osd1.vdi', disk2: 'gluster-node1-osd2.vdi', disk3: 'gluster-node1-osd3.vdi'},
+  { name: 'gluster-node2', disk1: 'gluster-node2-osd1.vdi', disk2: 'gluster-node2-osd2.vdi', disk3: 'gluster-node2-osd3.vdi'} ,
+   { name: 'gluster-node3', disk1: 'gluster-node3-osd1.vdi', disk2: 'gluster-node3-osd2.vdi', disk3: 'gluster-node3-osd3.vdi'} ,
+    { name: 'gluster-node4', disk1: 'gluster-node4-osd1.vdi', disk2: 'gluster-node4-osd2.vdi', disk3: 'gluster-node4-osd3.vdi'}
+]
+
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "centos/7"
+  #config.vm.box = "ubuntu/trusty64"
+
+  GLUSTER_HOSTS.each_with_index do |gluster_host, i|
+    config.vm.define gluster_host[:name] do |gluster_node|
+
+      gluster_node.vm.hostname = gluster_host[:name]
+
+      gluster_node.vm.network "private_network", ip: "192.168.57.1#{i}"
+
+      gluster_node.vm.network :forwarded_port, guest: 22, host: 2301 + i, auto_correct: false # for external provisioning
+
+      #gluster_node.vm.synced_folder "#{Dir.pwd}/data", "/home/vagrant/data", create: true
+
+      # https://github.com/oscar-stack/vagrant-hosts
+      # vagrant plugin install vagrant-hosts
+      gluster_node.vm.provision :hosts, :sync_hosts => true
+
+      gluster_node.vm.provider :virtualbox do |vb|
+        vb.name = gluster_host[:name]
+
+        vb.gui = false
+        vb.memory = "512"
+        vb.cpus = 1
+
+        file_to_disk1 = gluster_host[:disk1]
+        file_to_disk2 = gluster_host[:disk2]
+
+
+        #https://github.com/mitchellh/vagrant/issues/4015
+        unless File.exist?(File.expand_path("#{file_to_disk1}"))
+          vb.customize ["storagectl", :id, "--add", "sata", "--name", "SATA Controller",
+            "--controller", "IntelAHCI", "--hostiocache", "on", "--portcount", 2]
+
+          # /dev/sda
+          vb.customize ['createhd', '--filename', file_to_disk1, '--size', 5 * 1024]
+          # /dev/sdb
+          vb.customize ['createhd', '--filename', file_to_disk2, '--size', 7 * 1024]
+        end
+
+        vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1,
+            '--device', 0, '--type', 'hdd', '--medium', file_to_disk1]
+
+        vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 2,
+            '--device', 0, '--type', 'hdd', '--medium', file_to_disk2]
+
+
+        # change the network card hardware for better performance
+        vb.customize ["modifyvm", :id, "--nictype1", "virtio" ]
+        vb.customize ["modifyvm", :id, "--nictype2", "virtio" ]
+
+        # suggested fix for slow network performance
+        # see https://github.com/mitchellh/vagrant/issues/1807
+        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+        vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+      end
+    end
+  end
+
+  ANSIBLE_GROUPS = {
+    # "gluster_nodes" => ["gluster-node[1:3]"],
+    "gluster_nodes" => ["gluster-node1", "gluster-node2", "gluster-node3", "gluster-node4"],
+    "gluster_primary_node" => ["gluster-node1"],
+  }
+
+  # https://github.com/MatthewMi11er/vai
+  # vagrant plugin install vai
+  config.vm.provision :vai do |ansible|
+    ansible.inventory_dir = 'inventory/'
+    ansible.inventory_filename='gen_inv'
+
+    ansible.groups = ANSIBLE_GROUPS
+
+  end
+
+
+  config.vm.provision :ansible do |ansible|
+    ansible.playbook = "provisioning/glusterfs-install.yml"
+    ansible.sudo = true
+    ansible.raw_arguments = ["--connection=paramiko"]
+
+    ansible.groups = ANSIBLE_GROUPS
+
+    #ansible.extra_vars = {
+    #  gluster_nodes_list: 'gluster_node1 gluster_node2 gluster_node3',
+    #  ceph_primary_node: 'gluster_node1'
+    #}
+
+    #ansible.raw_arguments = ['-vvvv']
+  end
+
+
+
+end

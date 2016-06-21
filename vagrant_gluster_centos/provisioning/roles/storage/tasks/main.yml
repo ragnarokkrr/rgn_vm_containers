@@ -1,0 +1,28 @@
+---
+
+  - name: creating filesystem
+    filesystem: fstype=xfs dev={{ item }} force=yes
+    with_items:
+      - /dev/sda
+      - /dev/sdb
+      - /
+    tags:
+      - storage
+
+  - name: creating dirs
+    file: path={{ item }} state=directory
+    with_items:
+      - /data/brick1
+      - /data/brick2
+    tags:
+      - storage
+
+  - name: update /etc/fstab
+    lineinfile: dest=/etc/fstab line="/dev/sda /data/brick1 xfs defaults 1 2"
+    tags:
+      - storage
+
+  - name: mounting /data/brick1
+    mount: name=/data/brick1 src=/dev/sda fstype=xfs state=present
+    tags:
+      - storage
