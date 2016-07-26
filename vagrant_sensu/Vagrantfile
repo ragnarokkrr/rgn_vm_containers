@@ -40,8 +40,12 @@ wget -q http://sensu.global.ssl.fastly.net/apt/pubkey.gpg -O- | sudo apt-key add
 echo "deb     http://sensu.global.ssl.fastly.net/apt sensu main" | sudo tee /etc/apt/sources.list.d/sensu.list
 sudo apt-get update
 sudo apt-get -y install sensu
-sudo cp  ~/files/etc/sensu/conf.d/*.json /etc/sensu/conf.d/
+sudo cp  /home/vagrant/files/etc/sensu/conf.d/*.json /etc/sensu/conf.d/
 sudo chown -R sensu:sensu /etc/sensu/conf.d/*.json
+sudo service sensu-server start
+sudo service sensu-api start
+sudo service sensu-client start
+
 
 
 echo ">> Install Uchiwa"
