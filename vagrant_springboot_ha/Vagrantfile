@@ -5,34 +5,95 @@ Vagrant.configure(VAGRANT_API) do |config|
   config.vm.box = "ubuntu/trusty64"
 
   config.vm.define "proxy-active" do |proxy_active|
+    proxy_active.vm.hostname = "proxy-active"
     proxy_active.vm.network "private_network", ip: "192.168.33.10"
+
+    # https://github.com/oscar-stack/vagrant-hosts
+    # vagrant plugin install vagrant-hosts
+    proxy_active.vm.provision :hosts, :sync_hosts => true
+
+    proxy_active.vm.provider :virtualbox do |vb|
+      vb.name = "proxy-active"
+
+      vb.gui = false
+      vb.memory = "256"
+      vb.cpus = 1
+    end
   end
 
   config.vm.define "proxy-bkp" do |proxy_bkp|
+    proxy_bkp.vm.hostname = "proxy-bkp"
     proxy_bkp.vm.network "private_network", ip: "192.168.33.11"
+
+    # https://github.com/oscar-stack/vagrant-hosts
+    # vagrant plugin install vagrant-hosts
+    proxy_bkp.vm.provision :hosts, :sync_hosts => true
+
+    proxy_bkp.vm.provider :virtualbox do |vb|
+      vb.name = "proxy-bkp"
+
+      vb.gui = false
+      vb.memory = "256"
+      vb.cpus = 1
+    end
   end
 
   config.vm.define "hello-service1" do |hello_service1|
+    hello_service1.vm.hostname = "hello-service1"
     hello_service1.vm.network "private_network", ip: "192.168.33.12"
 
+    # https://github.com/oscar-stack/vagrant-hosts
+    # vagrant plugin install vagrant-hosts
+    hello_service1.vm.provision :hosts, :sync_hosts => true
+
+    hello_service1.vm.provider :virtualbox do |vb|
+      vb.name = "hello-service1"
+
+      vb.gui = false
+      vb.memory = "256"
+      vb.cpus = 1
+    end
   end
 
-  config.vm.define "hello-service2" do |hello_service1|
-    hello_service1.vm.network "private_network", ip: "192.168.33.13"
+  config.vm.define "hello-service2" do |hello_service2|
+    hello_service2.vm.hostname = "hello-service2"
+    hello_service2.vm.network "private_network", ip: "192.168.33.13"
+
+    # https://github.com/oscar-stack/vagrant-hosts
+    # vagrant plugin install vagrant-hosts
+    hello_service2.vm.provision :hosts, :sync_hosts => true
+
+    hello_service2.vm.provider :virtualbox do |vb|
+      vb.name = "hello-service2"
+
+      vb.gui = false
+      vb.memory = "256"
+      vb.cpus = 1
+    end
 
   end
 
+  ANSIBLE_GROUPS = {
+    "spring-boot-microservices" => ["hello-service1", "hello-service2"],
+    "loadbalancers" => ["proxy-active", "proxy-bkp"],
+    "ha-loadbalancers" => ["proxy-active", "proxy-bkp"],
+  }
 
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "provisioning/microservices.yml"
     ansible.sudo = true
     ansible.raw_arguments = ["--connection=paramiko"]
 
-    ansible.groups = {
-      "spring-boot-microservices" => ["hello-service[1:2]"]
-    }
+    ansible.groups = ANSIBLE_GROUPS
   end
 
+  # vagrant plugin install vai
+  config.vm.provision :vai do |ansible|
+    ansible.inventory_dir = 'inventory/'
+    ansible.inventory_filename='gen_inv'
 
+    ansible.groups = ANSIBLE_GROUPS
+
+  end
 
 end

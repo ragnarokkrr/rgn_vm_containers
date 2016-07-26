@@ -6,3 +6,13 @@
   roles:
     - jdk8
     - { role: ragna-packages, package_repo: "http://rawgit.com/ragnarokkrr/rgn_vm_containers/master/vagrant_springboot_ha/provisioning", package_name: "ragna-goodbye_0.1.0-1_all.deb", conf_file: "/opt/local/ragna-goodbye/conf/ragna-goodbye.properties", service_name: "ragna-goodbye"  }
+
+- hosts: loadbalancers
+  tasks:
+    - debug: msg="System {{ inventory_hostname }} has uuid {{ ansible_product_uuid }}"
+  roles:
+    - { role: haproxy, proxied_host_group: "spring-boot-microservices", proxied_port: 9000 }
+
+- hosts: ha-loadbalancers
+  tasks:
+    - debug: msg="System {{ inventory_hostname }} has uuid {{ ansible_product_uuid }}"

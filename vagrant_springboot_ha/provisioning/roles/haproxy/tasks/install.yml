@@ -1,0 +1,9 @@
+---
+  - block:
+    - name: Install HA Proxy 1.6 repo
+      apt_repository: repo='ppa:vbernat/haproxy-1.6'
+      tags: install
+
+    - name: Install haproxy 1.6
+      apt: name=haproxy update_cache=yes  state=present force=yes
+      tags: install

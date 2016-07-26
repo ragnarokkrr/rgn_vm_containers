@@ -1,0 +1,24 @@
+---
+- name: Configure HA Proxy
+  template: src=etc/haproxy/haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg owner=haproxy group=haproxy mode=0644
+  notify: restart HAProxy
+  tags:
+    - configure
+
+- name: Configure rsyslog to load UDP module
+  lineinfile: dest=/etc/rsyslog.conf
+    regexp='^#\$ModLoad imudp'
+    line='$ModLoad imudp'
+    state=present
+  tags:
+    - configure
+
+- name: Configure rsyslog to accept UDP messages from localhost
+  lineinfile: dest=/etc/rsyslog.conf
+    regexp='^#\$UDPServerRun 514'
+    line='$UDPServerRun 514'
+    insertafter='$UDPServerAddress 127.0.0.1'
+    state=present
+  notify: restart rsyslog
+  tags:
+    - configure

@@ -1,0 +1,56 @@
+global
+    log /dev/log    local0
+    log /dev/log    local1 notice
+    log             127.0.0.1 local1 notice
+    chroot /var/lib/haproxy
+    stats socket /run/haproxy/admin.sock mode 660 level admin
+    stats timeout 30s
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log global
+    mode http
+    option httplog
+    option dontlognull
+    option logasap
+    option log-separate-errors
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+    timeout contimeout 5000ms
+
+frontend service_frontend
+    bind {{ ansible_eth1['ipv4']['address'] }}:80
+    mode http
+    default_backend service_backend
+
+backend service_backend
+    mode http
+    balance roundrobin
+    option forwardfor
+
+    http-request set-header X-Forwarded-Port %[dst_port]
+    http-request add-header X-Forwarded-Proto https if { ssl_fc  }
+
+    # HEAD operation not present in microservices
+    #option httpchk HEAD / HTTP/1.1\r\nHost:localhost
+    option httpchk
+
+    # we "must gather facts" before using "ansible_eth1" and other info from hosts
+    #TODO solve reference to var 'proxied_host_group'
+    #{% set group_name = hostvars['proxied_host_group'] %}
+    #{% for host in groups[group_name] %}
+
+    {% for host in groups['spring-boot-microservices'] %}
+    server {{ hostvars[host].inventory_hostname }} {{ hostvars[host].ansible_eth1.ipv4.address }}:{{proxied_port}} check
+    {% endfor %}
+
+
+listen stats
+    bind *:1936
+    stats enable
+    stats uri /
+    stats hide-version
+    stats auth johnconnor:t800
