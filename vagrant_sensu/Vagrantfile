@@ -1,6 +1,7 @@
 $scriptServer = <<SCRIPT
 echo ">>>>> Install Sensu Server <<<<<"
 # sudo apt-get update
+sudo apt-get install jq
 
 echo ">> Install Redis"
 sudo apt-get -y install redis-server
@@ -51,6 +52,8 @@ sudo service sensu-client start
 echo ">> Install Uchiwa"
 sudo wget -nv http://dl.bintray.com/palourde/uchiwa/uchiwa_0.17.0-1_amd64.deb
 sudo dpkg -i uchiwa_0.17.0-1_amd64.deb
+sudo cp  /home/vagrant/files/etc/sensu/uchiwa.json /etc/sensu/
+sudo chown -R sensu:sensu /etc/sensu/uchiwa.json
 sudo service uchiwa start
 
 
@@ -60,27 +63,51 @@ sudo update-rc.d sensu-api defaults
 sudo update-rc.d sensu-client defaults
 sudo update-rc.d uchiwa defaults
 
+
+echo ">> Default checkers on Server"
+sudo sensu-install -p process-checks:0.0.6
+sudo sensu-install -p cpu-checks:0.0.3
+sudo sensu-install -p disk-checks:1.0.2
+
 SCRIPT
 
 $scriptClient = <<SCRIPT
-echo ">>>>> Install Sensu Client <<<<<"
 
+echo ">>>>> Install Sensu Client <<<<<"
+sudo apt-get install jq
+echo ">> Install Sensu core"
+wget -q http://sensu.global.ssl.fastly.net/apt/pubkey.gpg -O- | sudo apt-key add -
+echo "deb     http://sensu.global.ssl.fastly.net/apt sensu main" | sudo tee /etc/apt/sources.list.d/sensu.list
+sudo apt-get update
+sudo apt-get -y install sensu
+sudo cp  /home/vagrant/files/etc/sensu/conf.d/*.json /etc/sensu/conf.d/
+sudo chown -R sensu:sensu /etc/sensu/conf.d/*.json
+sudo service sensu-client start
+
+echo ">> Auto Start"
+sudo update-rc.d sensu-client defaults
+
+echo ">> Default checkers"
+sudo sensu-install -p process-checks:0.0.6
+sudo sensu-install -p cpu-checks:0.0.3
+sudo sensu-install -p disk-checks:1.0.2
 
 SCRIPT
 
 
 
 Vagrant.configure(2) do |config|
-  config.vm.define "sensu-server", primary: true do |sensu_server|
+  config.vm.define "sensu-server" do |sensu_server|
     sensu_server.vm.box = "ubuntu/trusty64"
     sensu_server.vm.network "private_network", ip: "192.168.70.2"
-    sensu_server.vm.provision "file", source: "files", destination: "/home/vagrant/files"
+    sensu_server.vm.provision "file", source: "files/server/", destination: "/home/vagrant/files"
     sensu_server.vm.provision "shell", inline: $scriptServer
   end
 
-  config.vm.define "client1", primary: true do |client1|
+  config.vm.define "client1" do |client1|
     client1.vm.box = "ubuntu/trusty64"
     client1.vm.network  "private_network", ip: "192.168.70.3"
+    client1.vm.provision "file", source: "files/client/", destination: "/home/vagrant/files"
     client1.vm.provision "shell", inline: $scriptClient
   end
 end

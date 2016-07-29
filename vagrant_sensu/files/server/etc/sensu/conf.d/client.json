@@ -1,14 +1,16 @@
 {
   "client": {
-    "name": "ubuntu",
-    "address": "127.0.0.1",
+    "name": "sensu-server",
+    "address": "192.168.70.2",
     "environment": "development",
     "subscriptions": [
+      "test",
       "dev",
-      "ubuntu"
+      "ubuntu",
+      "production"
     ],
     "socket": {
-      "bind": "127.0.0.1",
+      "bind": "192.168.70.2",
       "port": 3030
     }
   }

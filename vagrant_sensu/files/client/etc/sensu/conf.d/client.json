@@ -1,0 +1,12 @@
+{
+  "client": {
+    "name": "client1",
+    "address": "192.168.70.3",
+    "subscriptions": [
+      "test",
+      "dev",
+      "ubuntu",
+      "production"
+    ]
+  }
+}
