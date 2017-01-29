@@ -1,0 +1,9 @@
+---
+- name: restart cassandra
+  service: name=cassandra state=restarted enabled=yes
+
+- name: stop cassandra
+  service: name=cassandra state=stopped enabled=yes
+
+- name: start cassandra
+  service: name=cassandra state=started enabled=yes

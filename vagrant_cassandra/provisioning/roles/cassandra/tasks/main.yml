@@ -1,0 +1,28 @@
+---
+  - name: add datastax REPO
+    lineinfile: dest=/etc/apt/sources.list.d/cassandra.sources.list
+      regexp='^' line="deb http://www.apache.org/dist/cassandra/debian 35x main"
+      state=present
+      create=True
+
+  - name: add datastax KEY1
+    apt_key: keyserver=pgp.mit.edu id=F758CE318D77295D state=present
+
+  - name: add datastax KEY2
+    apt_key: keyserver=pgp.mit.edu id=2B5C1B00 state=present
+
+  - name: add datastax KEY3
+    apt_key: keyserver=pgp.mit.edu id=0353B12C state=present
+
+  - name: Install cassandra 3.5
+    apt: name={{item}} update_cache=yes  state=present force=yes
+    with_items:
+      - cassandra
+    notify: stop cassandra
+    tags: install
+
+  - name: override cassandra.yaml file
+    template: src=cassandra.yaml dest=/etc/cassandra/cassandra.yaml
+
+  - name: make sure cassandra is started
+    service: name=cassandra state=restarted

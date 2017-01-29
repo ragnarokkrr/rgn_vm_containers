@@ -1,0 +1,103 @@
+$scriptServer = <<SCRIPT
+#http://www.dbrnd.com/2016/04/nosql-install-single-node-cassandra-3-5-on-ubuntu-14-04/
+
+echo ">>>>> Install Java <<<<<"
+
+sudo add-apt-repository -y ppa:webupd8team/java
+sudo apt-get update
+echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+sudo apt-get -y install oracle-java8-installer
+
+echo ">>>>> Install utils <<<<<"
+echo "deb http://www.apache.org/dist/cassandra/debian 35x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+echo "deb-src http://www.apache.org/dist/cassandra/debian 35x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+
+
+echo ">>>>> Install Cassandra <<<<<"
+
+echo "==> Install 1st key"
+gpg --keyserver pgp.mit.edu --recv-keys F758CE318D77295D
+gpg --export --armor F758CE318D77295D | sudo apt-key add -
+
+echo "==> Install 2st key"
+gpg --keyserver pgp.mit.edu --recv-keys 2B5C1B00
+gpg --export --armor 2B5C1B00 | sudo apt-key add -
+
+echo "==> Install 3rd key"
+gpg --keyserver pgp.mit.edu --recv-keys 0353B12C
+gpg --export --armor 0353B12C | sudo apt-key add -
+
+sudo apt-get update
+
+sudo apt-get -y install cassandra
+
+sudo service cassandra stop
+
+#http://askubuntu.com/questions/435749/cant-start-an-application-as-service-but-running-as-standalone-process-simply
+sudo chmod 750 /var/run/cassandra
+
+#sudo vim /etc/init.d/cassandra;
+#remover
+#CMD_PATT="cassandra.+CassandraDaemon"
+#adicionar
+CMD_PATT="cassandra"
+
+sudo rm -rf /var/lib/cassandra/data/system/
+
+sudo service cassandra start
+
+SCRIPT
+
+$scriptServerDS = <<SCRIPT
+echo ">>>>> Install Java <<<<<"
+
+sudo add-apt-repository -y ppa:webupd8team/java
+sudo apt-get update
+echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+sudo apt-get -y install oracle-java8-installer
+
+#https://www.digitalocean.com/community/tutorials/how-to-run-a-multi-node-cluster-database-with-cassandra-on-ubuntu-14-04
+
+echo ">>>>> Install Java <<<<<"
+echo "deb http://debian.datastax.com/datastax-ddc 3.5 main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+
+sudo apt-get update
+sudo apt-get install datastax-ddc
+
+sudo service cassandra stop
+sudo rm -rf /var/lib/cassandra/data/system/*
+
+sudo service cassandra start
+
+SCRIPT
+
+Vagrant.configure(2) do |config|
+  config.vm.define "cassandra1" do |cassandra|
+    cassandra.vm.box = "ubuntu/trusty64"
+    cassandra.vm.network "private_network", ip: "192.168.70.2"
+    cassandra.vm.network "forwarded_port", guest: 9042, host: 9042
+
+    #cassandra.vm.provision "file", source: "provisioning-shell/", destination: "/home/vagrant/files"
+    #cassandra.vm.provision "shell", inline: $scriptServerDS
+
+    cassandra.vm.provider :virtualbox do |vb|
+      vb.memory = "2048"
+      vb.cpus = 1
+    end
+  end
+
+
+  ANSIBLE_GROUPS = {
+    "cassandra-nodes" => ["cassandra1"]
+  }
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "provisioning/cassandra-nodes.yml"
+    ansible.sudo = true
+    ansible.raw_arguments = ["--connection=paramiko"]
+    ansible.groups = ANSIBLE_GROUPS
+  end
+
+end

@@ -1,0 +1,11 @@
+---
+- hosts: cassandra-nodes
+  become: yes
+
+  tasks:
+    - debug: msg="System {{ inventory_hostname }} has uuid {{ ansible_product_uuid }}"
+
+  roles:
+    - base-tools
+    - jdk8
+    - cassandra
