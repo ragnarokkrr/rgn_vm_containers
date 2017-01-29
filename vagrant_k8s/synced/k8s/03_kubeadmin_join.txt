@@ -1,0 +1,1 @@
+kubeadm join --token=a11c09.d2478df157f3823a 10.0.2.15
