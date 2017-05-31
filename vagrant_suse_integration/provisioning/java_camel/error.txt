@@ -1,1 +1,0 @@
-Using /etc/ansible/ansible.cfg as config file

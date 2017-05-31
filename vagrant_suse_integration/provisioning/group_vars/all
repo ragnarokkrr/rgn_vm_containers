@@ -1,4 +1,0 @@
----
-
-jre: jre-8u92-linux-i586.rpm
-jre_path: http://download.oracle.com/otn-pub/java/jdk/8u92-b14/{{ jre }}

@@ -1,6 +1,0 @@
----
-  - hosts: all
-    roles:
-      - zabbix
-    tasks:
-      - debug: msg="application_servers provisioned"
