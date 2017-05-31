@@ -1,0 +1,36 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+#
+$script_packer = <<SCRIPT
+  sudo apt-get -y install zip
+  wget https://releases.hashicorp.com/packer/0.12.2/packer_0.12.2_linux_amd64.zip
+  unzip ./packer_0.12.2_linux_amd64.zip -d /usr/local/packer
+
+  echo 'export PATH=$PATH:/usr/local/packer' >> .bashrc
+  source .bashrc
+
+  echo $PATH
+  echo "packer installed"
+SCRIPT
+
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+
+  config.vm.define "ubuntu-packer-builder" do |ubuntu_packer_builder|
+    ubuntu_packer_builder.vm.synced_folder"/home/ragnarokkrr/prj/rgn_vm_containers/vagrant_packer/synced", "/vagrant/synced"
+    ubuntu_packer_builder.vm.hostname = "ubuntu-packer-builder"
+
+    ubuntu_packer_builder.vm.provision "shell", inline: $script_packer
+
+    #ubuntu_packer_builder.vm.network "forwarded_port", guest: 80, host: 8080
+    ubuntu_packer_builder.vm.network "private_network", ip: "192.168.33.10"
+    ubuntu_packer_builder.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "2048"
+      vb.cpus = 2
+    end
+  end
+
+end

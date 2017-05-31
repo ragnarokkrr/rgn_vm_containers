@@ -1,0 +1,41 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+
+# https://www.digitalocean.com/community/tutorials/how-to-install-jenkins-on-ubuntu-16-04
+$script_jenkins = <<SCRIPT
+  wget -q -O - https://pkg.jenkins.io/debian/jenkins-ci.org.key | sudo apt-key add -
+
+  echo deb http://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list
+
+  sudo apt-get update
+
+  sudo apt-get --yes --force-yes install jenkins
+
+  sudo systemctl start jenkins
+
+  sudo systemctl status jenkins
+
+  # opening firewall
+  sudo ufw allow 8080
+  sudo ufw status
+
+SCRIPT
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+
+  config.vm.define "jenkins" do |jenkins|
+    jenkins.vm.synced_folder './synced', '/vagrant' #, type: 'nfs'
+
+    jenkins.vm.network	"forwarded_port",	guest:	8080,	host:	8080     # http
+    jenkins.vm.provision "shell", inline: $script_jenkins
+
+    jenkins.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "1024"
+      vb.cpus = 2
+    end
+  end
+
+end

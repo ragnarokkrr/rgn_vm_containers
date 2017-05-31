@@ -1,0 +1,113 @@
+$scriptServer = <<SCRIPT
+echo ">>>>> Install Sensu Server <<<<<"
+# sudo apt-get update
+sudo apt-get install jq
+
+echo ">> Install Redis"
+sudo apt-get -y install redis-server
+sudo service redis-server status
+sudo service redis-server stop
+sudo sed -i.bak 's/# ULIMIT=65536/ULIMIT=65536/' /etc/default/redis-server
+sudo service redis-server start
+
+#redis /etc/sensu/conf.d files
+
+
+echo ">> Install Erlang"
+sudo wget -nv http://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
+sudo dpkg -i erlang-solutions_1.0_all.deb
+sudo apt-get update
+sudo apt-get -y install erlang-nox=1:18.2
+
+
+echo ">> Install RabbitMQ"
+sudo wget -nv http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.0/rabbitmq-server_3.6.0-1_all.deb
+sudo dpkg -i rabbitmq-server_3.6.0-1_all.deb
+
+echo ">> Configure RabbitMQ Access controls"
+sudo rabbitmqctl add_vhost /sensu
+sudo rabbitmqctl add_user sensu secret
+sudo rabbitmqctl set_permissions -p /sensu sensu ".*" ".*" ".*"
+sudo service rabbitmq-server stop
+sudo sed -i.bak 's/#ulimit -n 1024/ulimit -n 65536/' /etc/default/rabbitmq-server
+sudo service rabbitmq-server start
+sudo rabbitmqctl status
+
+#rabbitmq /etc/sensu/conf.d files
+
+
+echo ">> Install Sensu core"
+wget -q http://sensu.global.ssl.fastly.net/apt/pubkey.gpg -O- | sudo apt-key add -
+echo "deb     http://sensu.global.ssl.fastly.net/apt sensu main" | sudo tee /etc/apt/sources.list.d/sensu.list
+sudo apt-get update
+sudo apt-get -y install sensu
+sudo cp  /home/vagrant/files/etc/sensu/conf.d/*.json /etc/sensu/conf.d/
+sudo chown -R sensu:sensu /etc/sensu/conf.d/*.json
+sudo service sensu-server start
+sudo service sensu-api start
+sudo service sensu-client start
+
+
+
+echo ">> Install Uchiwa"
+sudo wget -nv http://dl.bintray.com/palourde/uchiwa/uchiwa_0.17.0-1_amd64.deb
+sudo dpkg -i uchiwa_0.17.0-1_amd64.deb
+sudo cp  /home/vagrant/files/etc/sensu/uchiwa.json /etc/sensu/
+sudo chown -R sensu:sensu /etc/sensu/uchiwa.json
+sudo service uchiwa start
+
+
+echo ">> Auto Start"
+sudo update-rc.d sensu-server defaults
+sudo update-rc.d sensu-api defaults
+sudo update-rc.d sensu-client defaults
+sudo update-rc.d uchiwa defaults
+
+
+echo ">> Default checkers on Server"
+sudo sensu-install -p process-checks:0.0.6
+sudo sensu-install -p cpu-checks:0.0.3
+sudo sensu-install -p disk-checks:1.0.2
+
+SCRIPT
+
+$scriptClient = <<SCRIPT
+
+echo ">>>>> Install Sensu Client <<<<<"
+sudo apt-get install jq
+echo ">> Install Sensu core"
+wget -q http://sensu.global.ssl.fastly.net/apt/pubkey.gpg -O- | sudo apt-key add -
+echo "deb     http://sensu.global.ssl.fastly.net/apt sensu main" | sudo tee /etc/apt/sources.list.d/sensu.list
+sudo apt-get update
+sudo apt-get -y install sensu
+sudo cp  /home/vagrant/files/etc/sensu/conf.d/*.json /etc/sensu/conf.d/
+sudo chown -R sensu:sensu /etc/sensu/conf.d/*.json
+sudo service sensu-client start
+
+echo ">> Auto Start"
+sudo update-rc.d sensu-client defaults
+
+echo ">> Default checkers"
+sudo sensu-install -p process-checks:0.0.6
+sudo sensu-install -p cpu-checks:0.0.3
+sudo sensu-install -p disk-checks:1.0.2
+
+SCRIPT
+
+
+
+Vagrant.configure(2) do |config|
+  config.vm.define "sensu-server" do |sensu_server|
+    sensu_server.vm.box = "ubuntu/trusty64"
+    sensu_server.vm.network "private_network", ip: "192.168.70.2"
+    sensu_server.vm.provision "file", source: "files/server/", destination: "/home/vagrant/files"
+    sensu_server.vm.provision "shell", inline: $scriptServer
+  end
+
+  config.vm.define "client1" do |client1|
+    client1.vm.box = "ubuntu/trusty64"
+    client1.vm.network  "private_network", ip: "192.168.70.3"
+    client1.vm.provision "file", source: "files/client/", destination: "/home/vagrant/files"
+    client1.vm.provision "shell", inline: $scriptClient
+  end
+end

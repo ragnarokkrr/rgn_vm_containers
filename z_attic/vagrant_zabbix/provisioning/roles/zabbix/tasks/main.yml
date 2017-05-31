@@ -1,0 +1,26 @@
+---
+  - name: nodejs4> repo install
+    apt_repository: repo='{{ item }} https://deb.nodesource.com/node_4.x {{ ansible_distribution_release|lower }} main' state=present
+    with_items:
+      - deb-src
+      - deb
+
+  - name: nodejs4> install
+    apt: name=nodejs update_cache=yes state=present force=yes
+
+  - name: nodejs4> Install node-gyp
+    command: "npm install -g node-gyp"
+
+  - name: nodejs4> Install deploy tools
+    command: "npm install -g {{ item }}"
+    with_items:
+      - bower
+      - grunt-cli
+      - browserify
+
+  - name: nodejs4> Install test libs
+    command: "npm install -g {{ item }}"
+    with_items:
+      - jasmine
+      - mocha
+      - chai
