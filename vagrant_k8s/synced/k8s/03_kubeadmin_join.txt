@@ -1,1 +1,5 @@
-kubeadm join --token=a11c09.d2478df157f3823a 10.0.2.15
+
+u can now join any number of machines by running the following on each node:
+
+kubeadm join --token=74e95d.3621f8aacfb3f52a 10.0.2.15
+
