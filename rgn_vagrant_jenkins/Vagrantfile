@@ -22,20 +22,61 @@ $script_jenkins = <<SCRIPT
 
 SCRIPT
 
+
+# https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04
+$script_artifactory = <<SCRIPT
+  sudo add-apt-repository ppa:webupd8team/java
+  sudo apt-get update
+
+  sudo apt-get install oracle-java8-installer
+
+  # sudo update-alternatives --config java
+
+  # sudo update-alternatives --config java
+
+  # sudo nano /etc/environment
+  # JAVA_HOME="/usr/lib/jvm/java-8-oracle"
+  # source /etc/environment
+  echo $JAVA_HOME
+
+SCRIPT
+
+
+
+
 Vagrant.configure(2) do |config|
   config.vm.box = "bento/ubuntu-16.04"
+  config.vm.box_version = "<=2.3.1"
 
   config.vm.define "jenkins" do |jenkins|
-    jenkins.vm.synced_folder './synced', '/vagrant' #, type: 'nfs'
+    jenkins.vm.synced_folder './synced/jenkins', '/vagrant' #, type: 'nfs'
 
     jenkins.vm.network	"forwarded_port",	guest:	8080,	host:	8080     # http
     jenkins.vm.provision "shell", inline: $script_jenkins
 
     jenkins.vm.provider "virtualbox" do |vb|
       vb.gui = false
-      vb.memory = "1024"
+      vb.memory = "512"
       vb.cpus = 2
     end
   end
+
+  # TODO
+  config.vm.define "artifactory" do |artifactory|
+    artifactory.vm.synced_folder './synced/jenkins', '/vagrant' #, type: 'nfs'
+
+    artifactory.vm.network	"forwarded_port",	guest:	8080,	host:	8080     # http
+    artifactory.vm.provision "shell", inline: $script_artifactory
+
+    artifactory.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "512"
+      vb.cpus = 2
+    end
+
+  end
+
+  # config.vm.define "docker_registry" do |docker_registry|
+
 
 end
