@@ -24,29 +24,142 @@ SCRIPT
 
 
 # https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04
+#
+# https://www.jfrog.com/confluence/display/RTF/Installing+on+Linux+Solaris+or+Mac+OS#InstallingonLinuxSolarisorMacOS-ServiceInstallation
+#
+#
 $script_artifactory = <<SCRIPT
   sudo add-apt-repository ppa:webupd8team/java
+
+  echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+
   sudo apt-get update
 
   sudo apt-get install oracle-java8-installer
 
-  # sudo update-alternatives --config java
+  sudo apt-get install oracle-java8-set-default
 
   # sudo update-alternatives --config java
-
-  # sudo nano /etc/environment
+  # sudo update-alternatives --config java
+  # sudo echo /etc/environment
   # JAVA_HOME="/usr/lib/jvm/java-8-oracle"
   # source /etc/environment
-  echo $JAVA_HOME
+  # echo $JAVA_HOME
+
+
+  wget https://bintray.com/jfrog/artifactory-debs/download_file?file_path=pool%2Fmain%2Fj%2Fjfrog-artifactory-oss-deb%2Fjfrog-artifactory-oss-5.3.1.deb
+
+  sudo dpkg -i download_file\?file_path\=pool%2Fmain%2Fj%2Fjfrog-artifactory-oss-deb%2Fjfrog-artifactory-oss-5.3.1.deb
+
+
+
+  sudo service artifactory start
+
+  sudo service artifactory check
+
 
 SCRIPT
 
 
+# https://www.build-business-websites.co.uk/install-nexus-on-ubuntu-16-04/
+$script_nexus_old = <<SCRIPT
+  sudo add-apt-repository ppa:webupd8team/java
+
+  echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+
+  sudo apt-get update
+
+  sudo apt-get -y --force-yes install oracle-java8-installer
+
+  sudo apt-get install oracle-java8-set-default
+
+  # sudo update-alternatives --config java
+  # sudo update-alternatives --config java
+  # sudo echo /etc/environment
+  # JAVA_HOME="/usr/lib/jvm/java-8-oracle"
+  # source /etc/environment
+  # echo $JAVA_HOME
+
+  wget https://sonatype-download.global.ssl.fastly.net/nexus/3/nexus-3.3.1-01-unix.tar.gz
+
+  tar -xvzf nexus-3.3.1-01-unix.tar.gz
+
+  sudo mkdir /opt/nexus
+  sudo cp -R ~/nexus-3.3.1-01 /opt/nexus/
+  sudo cp -R ~/sonatype-work/ /opt/nexus/
+
+
+  sed 's/run_as_user=\'\'/run_as_user=\'nexus\'' /opt/nexus/nexus-3.3.1-01/bin
+SCRIPT
+
+#https://github.com/moby/moby/issues/12461
+ $script_nexus_OLD = <<SCRIPT
+  sudo apt-get update
+
+  sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+
+  #sudo apt-add-repository 'deb https://apt.dockerproject.org/repo ubuntu-xenial main'
+
+  sudo apt-add-repository 'deb https://get.docker.com/ubuntu docker main'
+
+  sudo apt-get update
+
+  #sudo apt-get dist-upgrade
+
+  sudo apt-cache policy docker-engine
+
+  sudo apt-get install -y docker-engine
+
+
+  sudo systemctl status docker
+
+  sudo usermod -aG docker $(whoami)
+
+  sudo usermod -aG docker vagrant
+
+SCRIPT
+
+
+#https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+
+####### https://docs.docker.com/engine/installation/linux/ubuntu/#install-using-the-repository  TRANSPOSE this TODO to script
+#######
+####### https://www.build-business-websites.co.uk/install-nexus-on-ubuntu-16-04/
+#######
+$script_nexus = <<SCRIPT
+
+sudo apt-get remove docker docker-engine
+
+sudo apt-get install \
+  apt-transport-https \
+  ca-certificates \
+  curl \
+  software-properties-common
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# amd64
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+
+
+# docker
+sudo apt-get update
+
+sudo apt-get install docker-ce
+
+
+# sudo apt-get install docker-ce=<VERSION>
+
+
+SCRIPT
 
 
 Vagrant.configure(2) do |config|
   config.vm.box = "bento/ubuntu-16.04"
-  config.vm.box_version = "<=2.3.1"
+  config.vm.box_version = "2.3.5"
 
   config.vm.define "jenkins" do |jenkins|
     jenkins.vm.synced_folder './synced/jenkins', '/vagrant' #, type: 'nfs'
@@ -63,9 +176,9 @@ Vagrant.configure(2) do |config|
 
   # TODO
   config.vm.define "artifactory" do |artifactory|
-    artifactory.vm.synced_folder './synced/jenkins', '/vagrant' #, type: 'nfs'
+    artifactory.vm.synced_folder './synced/artifactory', '/vagrant' #, type: 'nfs'
 
-    artifactory.vm.network	"forwarded_port",	guest:	8080,	host:	8080     # http
+    artifactory.vm.network	"forwarded_port",	guest:	8081,	host:	8082     # http
     artifactory.vm.provision "shell", inline: $script_artifactory
 
     artifactory.vm.provider "virtualbox" do |vb|
@@ -76,7 +189,37 @@ Vagrant.configure(2) do |config|
 
   end
 
-  # config.vm.define "docker_registry" do |docker_registry|
+  # TODO
+  # https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+  # http://codeheaven.io/using-nexus-3-as-your-repository-part-1-maven-artifacts/ (as docker)
+  # http://www.sonatype.org/nexus/2017/02/14/using-nexus-3-as-your-repository-part-2-npm-packages/
+  #
+  #
+  # http://www.sonatype.org/nexus/2017/02/02/sonatype-nexus-installation-using-docker/
+  #
+  #https://github.com/sonatype/docker-nexus3/blob/master/Dockerfile
+  #
+  #curl http://localhost:8081/nexus/service/local/status
+  #
+  #https://hub.docker.com/r/sonatype/nexus/
+  #
+  #
+  config.vm.define "nexus" do |nexus|
+    nexus.vm.synced_folder './synced/nexus', '/vagrant' #, type: 'nfs'
 
+    nexus.vm.network	"forwarded_port",	guest:	8081,	host:	8086     # http
+    nexus.vm.provision "shell", inline: $script_nexus
+
+    nexus.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "1024"
+      vb.cpus = 2
+    end
+
+  end
+
+  # TODO REPRO http://www.linux-admins.net/2012/08/creating-apt-repository-with-reprepro.html
+  # TODO
+  # config.vm.define "docker_registry" do |docker_registry|
 
 end
