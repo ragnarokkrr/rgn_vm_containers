@@ -1,0 +1,35 @@
+18: 22: 19, 831 - {
+  "urlIn": "/api/account/terms",
+  "timeIn": 1495894659925,
+  "timeOut": 1495894659929,
+  "userAgent": "Mozilla/5.0 (Windows NT 6.3; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0",
+  "ipAddress": "191.247.120.38",
+  "headers": {
+    "x-tr-orig-uri": "/api/account/terms",
+    "x-tr-canonical-uri": "/api/account/terms",
+    "x-tr-requestor-ip": "191.247.120.38",
+    "x-1p-zuul-host": "https://projectne.thomsonreuters.com",
+    "x-forwarded-for": "172.27.193.19"
+  },
+  "filterTracers": [{
+    "filterName": "frontendPreFilter",
+    "timeIn": 1495894659925,
+    "timeOut": 0,
+    "status": -1,
+    "executionTime": -1495894659925
+  }, {
+    "filterName": "accountPreFilter",
+    "timeIn": 1495894659925,
+    "timeOut": 0,
+    "status": -1,
+    "executionTime": -1495894659925
+  }, {
+    "filterName": "RIBBON_COMMAND",
+    "url": "http://ec2-35-160-147-8.us-west-2.compute.amazonaws.com:7001/account/terms",
+    "clientName": "AUTH",
+    "timeIn": 1495894659925,
+    "timeOut": 1495894659928,
+    "status": 200,
+    "executionTime": 3
+  }]
+}

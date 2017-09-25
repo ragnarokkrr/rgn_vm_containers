@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+
+
+
+
+# https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#install-using-the-repository
+$script_docker = <<SCRIPT
+    sudo apt-get update
+
+    sudo apt-get remove docker docker-engine docker.io
+
+    sudo apt-get -y install \
+    linux-image-extra-$(uname -r) \
+    linux-image-extra-virtual
+
+
+    sudo apt-get -y install \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        software-properties-common
+
+
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+    sudo apt-key fingerprint 0EBFCD88
+
+    sudo apt-get -y install docker-ce
+
+SCRIPT
+
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+  #config.vm.box_version = "2.3.5"
+
+  config.vm.define "docker" do |docker|
+    docker.vm.synced_folder './synced', '/vagrant' #, type: 'nfs'
+
+    #docker.vm.network	"forwarded_port",	guest:	8080,	host:	8080     # http
+    docker.vm.provision "shell", inline: $script_docker
+
+    docker.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "512"
+      vb.cpus = 2
+    end
+  end
+
+
+
+end

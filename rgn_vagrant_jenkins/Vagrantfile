@@ -130,7 +130,7 @@ $script_nexus = <<SCRIPT
 
 sudo apt-get remove docker docker-engine
 
-sudo apt-get install \
+sudo apt-get -y install \
   apt-transport-https \
   ca-certificates \
   curl \
@@ -148,11 +148,12 @@ sudo add-apt-repository \
 # docker
 sudo apt-get update
 
-sudo apt-get install docker-ce
 
+sudo apt-get -y install docker-ce
 
-# sudo apt-get install docker-ce=<VERSION>
+# sudo apt-get  -y install docker-ce=<VERSION>
 
+# sudo docker run -d -p 8081:8081 -p 8082:8082 -p 8083:8083 --name my-nexus sonatype/nexus3:3.0.0 -v /vagrant/nexus/data:/nexus-data
 
 SCRIPT
 
@@ -178,7 +179,9 @@ Vagrant.configure(2) do |config|
   config.vm.define "artifactory" do |artifactory|
     artifactory.vm.synced_folder './synced/artifactory', '/vagrant' #, type: 'nfs'
 
-    artifactory.vm.network	"forwarded_port",	guest:	8081,	host:	8082     # http
+    artifactory.vm.network	"forwarded_port",	guest:	8081,	host:	8091     # http
+    artifactory.vm.network	"forwarded_port",	guest:	8082,	host:	8092     # http
+    artifactory.vm.network	"forwarded_port",	guest:	8083,	host:	8093     # http
     artifactory.vm.provision "shell", inline: $script_artifactory
 
     artifactory.vm.provider "virtualbox" do |vb|
@@ -208,6 +211,8 @@ Vagrant.configure(2) do |config|
     nexus.vm.synced_folder './synced/nexus', '/vagrant' #, type: 'nfs'
 
     nexus.vm.network	"forwarded_port",	guest:	8081,	host:	8086     # http
+    nexus.vm.network	"forwarded_port",	guest:	8082,	host:	8092     # http
+    nexus.vm.network	"forwarded_port",	guest:	8083,	host:	8093     # http
     nexus.vm.provision "shell", inline: $script_nexus
 
     nexus.vm.provider "virtualbox" do |vb|
