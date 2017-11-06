@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+#  creationTimestamp: null
+  name: redis
+spec:
+  replicas: 1
+  # selector Label Selectoe
+  # https://stackoverflow.com/questions/37351504/kubernetes-why-does-selector-field-fail-to-validate-for-deployment
+  selector:
+    matchLabels:
+      name: redis
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        #app: redis
+        name: redis
+    spec:
+      containers:
+        - image: redis
+          name: redis
+          resources: {}
+      restartPolicy: Always
+status: {}
+

@@ -119,8 +119,25 @@ SCRIPT
 
 SCRIPT
 
+# https://www.aptly.info/download/
+$script_aptly = <<SCRIPT
+deb http://repo.aptly.info/ squeeze main
 
-#https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+sudo apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460
+
+wget -qO - https://www.aptly.info/pubkey.txt | sudo apt-key add -
+
+apt-get update
+apt-get install aptly
+
+deb http://repo.aptly.info/ nightly main
+
+
+
+SCRIPT
+
+
+#https://www.digitalocean.com/community/tutorials/el and they suggested to set up a call on Thursdayhow-to-install-and-use-docker-on-ubuntu-16-04
 
 ####### https://docs.docker.com/engine/installation/linux/ubuntu/#install-using-the-repository  TRANSPOSE this TODO to script
 #######
@@ -144,7 +161,7 @@ sudo add-apt-repository \
    $(lsb_release -cs) \
    stable"
 
-
+el and they suggested to set up a call on Thursday
 # docker
 sudo apt-get update
 
@@ -153,7 +170,7 @@ sudo apt-get -y install docker-ce
 
 # sudo apt-get  -y install docker-ce=<VERSION>
 
-# sudo docker run -d -p 8081:8081 -p 8082:8082 -p 8083:8083 --name my-nexus sonatype/nexus3:3.0.0 -v /vagrant/nexus/data:/nexus-data
+# sudo docker run -d -p 8081:8081 -p 8082:8082 -p 8083:8083 -v /vagrant/nexus/data:/nexus-data --name my-nexus sonatype/nexus3:3.0.0
 
 SCRIPT
 
@@ -196,7 +213,7 @@ Vagrant.configure(2) do |config|
   # https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
   # http://codeheaven.io/using-nexus-3-as-your-repository-part-1-maven-artifacts/ (as docker)
   # http://www.sonatype.org/nexus/2017/02/14/using-nexus-3-as-your-repository-part-2-npm-packages/
-  #
+  #https://hub.docker.com/r/sonatype/nexus3/
   #
   # http://www.sonatype.org/nexus/2017/02/02/sonatype-nexus-installation-using-docker/
   #
@@ -222,6 +239,30 @@ Vagrant.configure(2) do |config|
     end
 
   end
+
+
+
+
+
+
+  config.vm.define "aptly" do |aptly|
+    aptly.vm.synced_folder './synced/aptly', '/vagrant' #, type: 'nfs'
+
+    aptly.vm.network	"forwarded_port",	guest:	8081,	host:	8086     # http
+    aptly.vm.network	"forwarded_port",	guest:	8082,	host:	8092     # http
+    aptly.vm.network	"forwarded_port",	guest:	8083,	host:	8093     # http
+    aptly.vm.provision "shell", inline: $script_aptly
+
+    aptly.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "256"
+      vb.cpus = 1
+    end
+
+  end
+
+
+
 
   # TODO REPRO http://www.linux-admins.net/2012/08/creating-apt-repository-with-reprepro.html
   # TODO
