@@ -13,6 +13,14 @@
             ]
         },
         {
+            "name": "surname",
+            "doc": "added a surname",
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        {
             "name": "name",
             "doc": "a name",
             "type": [

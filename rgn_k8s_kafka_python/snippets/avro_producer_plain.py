@@ -21,7 +21,8 @@ avroProducer = AvroProducer({'bootstrap.servers': BOOTSTRAP_SERVERS,
 
 
 for i in xrange(100):
-    value = {"name": generate_words(count=10),
+    value = {"name": generate_words(count=1),
+             "surname": generate_words(count=2),
              "number": random.randint(0, 100)}
 
     print str(value)

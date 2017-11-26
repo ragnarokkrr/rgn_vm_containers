@@ -8,11 +8,12 @@ BOOTSTRAP_SERVERS = '172.17.0.4'
 
 TOPIC = 'avrotopic'
 
-GROUP = 'test_group'
+GROUP = 'test_group_new2'
 
 c = AvroConsumer({'bootstrap.servers': BOOTSTRAP_SERVERS,
                   'schema.registry.url': SCHEMA_REGISTRY_URL,
-                  'group.id': GROUP
+                  'group.id': GROUP,
+                  'default.topic.config': {'auto.offset.reset': 'smallest'}
                   })
 c.subscribe([TOPIC])
 running = True
