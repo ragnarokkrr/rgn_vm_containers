@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+
+  dummy:
+    build: dummy_flask/
+    environment:
+      - HELLO='docker compose'
+    ports:
+      - "6000:6000"
+# volumes:
+#     - dummy_flask/:/code
