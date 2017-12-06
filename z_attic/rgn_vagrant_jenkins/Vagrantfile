@@ -182,7 +182,7 @@ Vagrant.configure(2) do |config|
   config.vm.define "jenkins" do |jenkins|
     jenkins.vm.synced_folder './synced/jenkins', '/vagrant' #, type: 'nfs'
 
-    jenkins.vm.network	"forwarded_port",	guest:	8080,	host:	8080     # http
+    jenkins.vm.network	"forwarded_port",	guest:	8080,	host:	8090     # http
     jenkins.vm.provision "shell", inline: $script_jenkins
 
     jenkins.vm.provider "virtualbox" do |vb|
