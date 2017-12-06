@@ -9,9 +9,9 @@ metadata:
   name: flask-app
 spec:
   ports:
-  - port: 6379
+  - port: 6000
     protocol: TCP
-    targetPort: 6379
+    targetPort: 6000
   selector:
     app: flask
     tier: frontend

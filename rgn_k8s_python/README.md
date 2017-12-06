@@ -42,82 +42,14 @@ $ docker-compose up
 
 $ docker exec -it rgnk8spython_web_1 bash
 
+$ docker ps -f "status=exited"
+
 ```
 
 ### docker compose test commands
 ```bash
 curl -H "Content-Type: application/json" -X PUT -d '{"hello":999}' http://localhost:6000/testurl
 curl -X GET http://localhost:6000/
-```
-
-
-### minikube / kubectl basics
-```bash
-
-$ minikube start --vm-driver=virtualbox
-
-$ kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
-
-$ kubectl expose deployment hello-minikube --type=NodePort
-
-$ kubectl get pod
-
-$ curl $(minikube service hello-minikube --url)
-
-$ kubectl get services
-
-$ kubectl delete service hello-minikube
-
-$ kubectl delete deployment  hello-minikube
-
-$ minikube dashboard
-
-```
-
-### minikube / kubectl post
-```bash
-$ kubectl create -f redis-deployment.yaml
-
-$ kubectl create -f redis-service.yaml
-
-$ kubectl create -f flask-deployment.yaml
-
-$ kubectl create -f flask-service.yaml
-
-
-$ kubectl delete -f flask-service.yaml
-
-$ kubectl delete -f flask-deployment.yaml
-
-$ kubectl delete -f redis-deployment.yaml
-
-$ kubectl delete -f redis-service.yaml
-
-
-```
-### Minikube insecure registry
-```bash
-$ minikube start --vm-driver=virtualbox --insecure-registry localhost:5000
- 
-$ eval $(minikube docker-env)
- 
- 
- 
-```
-
-### docker local registry build tag push 
-```bash 
-$ docker run -d -p 5000:5000 --restart=always --name registry registry:2
-
-# build 
-$ docker build -t ragna/flaskservice .
-
-# tag
-$ docker tag ragna/flaskservice localhost:5000/ragna/flaskservice
-
-#push
-$ docker push localhost:5000/ragna/flaskservice
-
 ```
 
 
@@ -150,6 +82,85 @@ $ curl http://localhost:5000/v2/_catalog
 ```
 
 
+### docker local registry build tag push 
+```bash 
+
+$ docker run -d -p 5000:5000 --restart=always --name registry registry:2
+
+# build 
+$ docker build -t ragna/flaskservice .
+
+# tag
+$ docker tag ragna/flaskservice localhost:5000/ragna/flaskservice
+
+#push
+$ docker push localhost:5000/ragna/flaskservice
+
+```
+
+
+
+### Minikube insecure registry
+```bash
+$ minikube start --vm-driver=virtualbox --insecure-registry localhost:5000
+ 
+$ eval $(minikube docker-env)
+ 
+
+ 
+```
+
+### minikube / kubectl basics
+```bash
+
+$ minikube start --vm-driver=virtualbox
+
+$ kubectl run hello-minikube --image=gcr.io/google_containers/echoserver:1.4 --port=8080
+
+$ kubectl expose deployment hello-minikube --type=NodePort
+
+$ kubectl get pod
+
+$ curl $(minikube service hello-minikube --url)
+
+$ kubectl get services
+
+$ kubectl delete service hello-minikube
+
+$ kubectl delete deployment  hello-minikube
+
+$ minikube dashboard
+
+$ minikube status
+
+$ minikube stop
+
+```
+
+### minikube / kubectl post
+```bash
+$ kubectl create -f redis-deployment.yaml
+
+$ kubectl create -f redis-service.yaml
+
+$ kubectl create -f flask-deployment.yaml
+
+$ kubectl create -f flask-service.yaml
+
+
+$ kubectl delete -f flask-service.yaml
+
+$ kubectl delete -f flask-deployment.yaml
+
+$ kubectl delete -f redis-service.yaml
+
+$ kubectl delete -f redis-deployment.yaml
+
+
+
+```
+
+
 ### kubegen
 ```bash
 $ sudo npm install -g yo
@@ -159,8 +170,9 @@ $ sudo npm install -g generator-kubegen
 
 ## Ref
 
-* http://blog.apcelent.com/scaling-python-microservices-kubernetes.html
+* [Scaling Python Microservices with Kubernetes](http://blog.apcelent.com/scaling-python-microservices-kubernetes.html)
 * https://github.com/kubernetes/minikube#quickstart
+* https://github.com/diegopacheco/Building_Effective_Microservices
 * [Stack Overflow - How to use local docker images in Kubernetes?
 ](https://stackoverflow.com/questions/42564058/how-to-use-local-docker-images-in-kubernetes)
 * https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#links
@@ -181,3 +193,4 @@ $ sudo npm install -g generator-kubegen
 ****
 
 * [Getting Started with Kubernetes via Minikube](https://medium.com/@claudiopro/getting-started-with-kubernetes-via-minikube-ada8c7a29620)
+

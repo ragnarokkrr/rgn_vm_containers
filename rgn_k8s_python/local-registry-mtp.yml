@@ -16,7 +16,7 @@ spec:
     metadata:
       labels:
         k8s-app: kube-registry
-        version: v0
+        version: vte0
     spec:
       containers:
       - name: registry

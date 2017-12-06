@@ -27,7 +27,7 @@ spec:
       - image: ragna/flaskservice
         name: flask-app
         ports:
-        - containerPort: 7000
+        - containerPort: 6000
         resources: {}
         imagePullPolicy: Never
 status: {}
