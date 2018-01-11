@@ -68,4 +68,4 @@ Starting from docker 1.9.0 default docker bridge is 172.17.0.1 instead of 172.17
 
 * [Deploying a DNS Server using Docker](http://www.damagehead.com/blog/2015/04/28/deploying-a-dns-server-using-docker/)
 * [Configuring Eureka](https://github.com/Netflix/eureka/wiki/Configuring-Eureka)
-
+* [Prana: A Sidecar for your Netflix PaaS based Applications and Services](https://medium.com/netflix-techblog/prana-a-sidecar-for-your-netflix-paas-based-applications-and-services-258a5790a015)
