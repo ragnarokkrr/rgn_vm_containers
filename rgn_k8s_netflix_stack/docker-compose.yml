@@ -1,12 +1,30 @@
-version: '2'
+version: '3'
 
 services:
 
   dummy:
-    build: dummy_flask/
+    build: ./dummy_flask
     environment:
       - HELLO='docker compose'
     ports:
       - "6000:6000"
 # volumes:
 #     - dummy_flask/:/code
+
+
+  bind:
+    build: ./bind
+    #image: sameersbn/bind:latest
+    dns: 127.0.0.1
+    environment:
+      - ROOT_PASSWORD=SecretPassword
+    ports:
+      - 172.17.0.1:10000:10000
+      - 172.17.0.1:53:53/udp
+    volumes:
+      - /srv/docker/bind:/data
+
+
+
+  eureka:
+    build: ./netflixoss_eureka
